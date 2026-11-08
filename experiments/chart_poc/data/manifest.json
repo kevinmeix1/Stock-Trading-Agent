@@ -1,0 +1,50 @@
+{
+  "analysis_adjustment": "OHLC multiplied per row by adj_close/close; volume remains raw, unused in prediction",
+  "currency": "USD",
+  "frozen_on": "2026-11-08",
+  "interval": "1D",
+  "origin": "Quandl WIKI Prices via Bokeh sampledata",
+  "raw_fields": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "adj_close"
+  ],
+  "revision_limit": "retrospective adjusted snapshot, includes subsequent corporate actions; not a point-in-time vendor archive",
+  "source_commit": "c0ccb5facf6db1c2ee4dffdde80ad9c06bc9b587",
+  "source_license": "Public domain (upstream stocks dataset notice)",
+  "source_notice": "https://github.com/bokeh/bokeh_sampledata/blob/c0ccb5facf6db1c2ee4dffdde80ad9c06bc9b587/licenses/datasets.json",
+  "source_sha256": "5abadf99b2d394f920120a27de6f0df129859d71d4cfb0bf661bcc99446ab1fd",
+  "source_url": "https://raw.githubusercontent.com/bokeh/bokeh_sampledata/c0ccb5facf6db1c2ee4dffdde80ad9c06bc9b587/src/bokeh_sampledata/_data/stocks.csv.gz",
+  "symbols": [
+    {
+      "end": "2013-03-01",
+      "file": "AAPL.csv",
+      "rows": 3270,
+      "sha256": "6af8063d42b79cf89ba68dfefe5d8107b8a330f962d736dd3ef3428e4ddcf9dd",
+      "start": "2000-03-01",
+      "symbol": "AAPL"
+    },
+    {
+      "end": "2013-03-01",
+      "file": "IBM.csv",
+      "rows": 3270,
+      "sha256": "a656c3bcc4ee3254b19cfe44b8613399602815c59beae2eb5d71dcef34752975",
+      "start": "2000-03-01",
+      "symbol": "IBM"
+    },
+    {
+      "end": "2013-03-01",
+      "file": "MSFT.csv",
+      "rows": 3270,
+      "sha256": "3feb728e4b1bad8b9bf615ab83489ca5834543081b9ad3b6cef9e9e117a28546",
+      "start": "2000-03-01",
+      "symbol": "MSFT"
+    }
+  ],
+  "time": "date-only US session label, no invented intraday timestamp",
+  "venue": "US primary-market historical daily bars"
+}

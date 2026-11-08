@@ -281,6 +281,11 @@ tests/                     # 46 offline, deterministic tests
 - Live news/sentiment feeds; intraday bars; transaction-cost & slippage models
 - Reinforcement learning over the conviction → sizing policy
 
+## Read-only chart-analysis PoC
+
+The separate [read-only chart-analysis PoC](experiments/chart_poc/README.md)
+compares historical MASS matches with trend/momentum baselines on frozen data.
+
 ## License
 
 MIT. For research and educational use only — **not** investment advice.

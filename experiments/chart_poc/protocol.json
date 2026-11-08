@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "status": "fixed_before_first_outcome_evaluation",
+  "registered_on": "2026-11-08",
+  "symbols": [
+    "AAPL",
+    "IBM",
+    "MSFT"
+  ],
+  "window": 60,
+  "horizon": 20,
+  "stride": 20,
+  "k": 5,
+  "train_end": "2006-12-31",
+  "validation_start": "2007-01-01",
+  "validation_end": "2009-12-31",
+  "holdout_start": "2010-01-01",
+  "holdout_end": "2013-03-01",
+  "matching": "STUMPY MASS on log adjusted closes, per-window z-normalization ddof=0",
+  "library": "fixed training prefix only; candidate outcome must end within train and before query start",
+  "neighbors": "greedy distance order, disjoint feature+outcome intervals, same symbol only",
+  "target": "sign of log(close[t+20]/close[t]); forecast at closed bar t; no execution simulation",
+  "baselines": [
+    "trend_sma20_vs_sma50",
+    "momentum20",
+    "always_positive_control"
+  ],
+  "primary": "paired holdout directional accuracy difference MASS minus each of trend and momentum",
+  "bootstrap": {
+    "seed": 20261108,
+    "replicates": 5000,
+    "block_length_query_dates": 5,
+    "sensitivity_blocks": [
+      3,
+      8
+    ],
+    "interval_per_comparison": 0.975,
+    "familywise_comparisons": 2
+  },
+  "decision": "Evidence within this sample only if both primary paired interval lower bounds > 0; otherwise no demonstrated advantage. No universal inference with 3 correlated survivors.",
+  "structures": {
+    "pivot_radius": 2,
+    "equal_extrema": "first in centered window",
+    "double_bottom_min_gap": 10,
+    "double_bottom_max_gap": 80,
+    "bottom_tolerance_atr": 0.75,
+    "min_rebound_atr": 1.5,
+    "break_buffer_atr": 0.1,
+    "invalidation_atr": 0.25,
+    "expiry_bars": 40
+  },
+  "tuning": "none; validation descriptive; parameters not selected from holdout",
+  "excluded": [
+    "DTW",
+    "AI agents",
+    "TradingView",
+    "broker",
+    "orders",
+    "production decision functions"
+  ]
+}
