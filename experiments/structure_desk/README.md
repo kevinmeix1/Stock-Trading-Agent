@@ -103,7 +103,7 @@ with dates rather than implying every old formation remains active today.
 
 ## Validation and delivery
 
-75 tests pass: 46 unchanged baseline tests and29 isolated Structure Desk cases.
+80 tests pass: 46 unchanged baseline tests and34 isolated Structure Desk cases.
 They cover hand-calculated RSI/ATR, exact swings, confirmation lag, strict ties,
 wick versus close breaks, CHoCH direction, missing/invalid data, two-touch zones,
 between-touch invalidation, immutable geometry under future volatility, no-future
@@ -113,6 +113,11 @@ cutoff and byte-identical regeneration. The optional Node geometry regression
 verifies RSI fill begins only at the first available observation (no warmup fill);
 it skips if Node is absent. Node was present and the check passed in this validation.
 Ruff and JavaScript syntax checks pass.
+
+RSI presentation uses a separate non-directional style: both extremes are amber
+and labelled overextension (overbought or oversold); the ordinary range is neutral.
+The RSI card and shaded areas do not use BULLISH/BEARISH classes. Five full-render
+regressions cover 20/30/50/70/80, preserving the separate technical assessment.
 
 Independent review PASS after correcting the two zone findings and rerunning all
 74 tests at that stage, then all29 experiment cases including the final RSI warmup

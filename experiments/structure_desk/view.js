@@ -10,10 +10,11 @@ $('title').textContent=report.symbol;
 $('meta').textContent=`${report.as_of} · ${report.currency} · ${report.bars} Tagesabschlüsse · ${report.source}`;
 $('state').append(el('small','TECHNICAL STATE'),el('div',report.assessment.state,`badge ${report.assessment.state}`));
 const last=report.series.at(-1), rsi=report.momentum.rsi14;
+const rsiLabel=rsi>70?'Überkauft · Überdehnung':rsi<30?'Überverkauft · Überdehnung':'Neutral';
 const metric=(label,value,note,cls='')=>{const item=el('article','','metric');item.append(el('span',label),el('strong',value,cls),el('small',note));$('metrics').append(item);};
 metric('Schlusskurs',`${fmt(last.close)} ${report.currency}`,last.date);
 for(const t of report.trends)metric(`Trend · ${t.window} Sessions`,labels[t.direction],t.efficiency===null?'Historie zu kurz':`Effizienz ${fmt(t.efficiency*100)} %`,t.direction);
-metric('RSI 14',fmt(rsi),rsi>70?'Überkauft':rsi<30?'Überverkauft':'Neutral',rsi>70?'BEARISH':rsi<30?'BULLISH':'NEUTRAL');
+metric('RSI 14',fmt(rsi),rsiLabel,rsi>70||rsi<30?'rsi-extension':'rsi-neutral');
 metric('ATR 14',fmt(report.atr14),`${report.currency} · Wilder`);
 const reasonText={trend:'Trend',structure:'Marktstruktur',momentum:'MACD-Momentum'};
 for(const [key,value]of Object.entries(report.assessment.votes))$('assessment').append(el('p',`${reasonText[key]}: ${labels[value]}`,value));
@@ -46,11 +47,11 @@ function priceChart(){const height=330,y=v=>20+(high-v)/(high-low)*(height-55),r
  root.addEventListener('pointermove',event=>{const r=root.getBoundingClientRect(),i=Math.max(0,Math.min(report.series.length-1,Math.round(((event.clientX-r.left)*width/r.width-left)/plot*(report.series.length-1))));const p=report.series[i];$('price-readout').textContent=`${p.date} · Schlusskurs ${fmt(p.close)} ${report.currency}`;});
  $('price-chart').append(root);$('price-readout').textContent=`${last.date} · Schlusskurs ${fmt(last.close)} ${report.currency}`;
 }
-function rsiChart(){const height=150,y=v=>10+(100-v)*1.15,root=svg('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':'RSI: transparente rote Überschreitung über70, grüne Unterschreitung unter30'}),defs=svg('defs');
- for(const [name,value,color]of [['overbought',70,'#e47d83'],['oversold',30,'#70d5a8']]){const clip=svg('clipPath',{id:`rsi-${name}`});clip.append(svg('rect',{x:left,y:name==='overbought'?y(100):y(30),width:plot,height:name==='overbought'?y(70)-y(100):y(0)-y(30)}));defs.append(clip);const points=rsiFillPoints(report.series.map(p=>p.rsi14),value,x,y);if(points){root.append(svg('polygon',{points,fill:color,opacity:.23,'clip-path':`url(#rsi-${name})`,'data-rsi-zone':name}));}}
- root.append(defs);for(const value of [0,30,50,70,100])root.append(svg('line',{x1:left,x2:width-right,y1:y(value),y2:y(value),stroke:value===30?'#39775b':value===70?'#8c5055':'#34424a','stroke-dasharray':value===30||value===70?'4 4':'none'}),svg('text',{x:width-right+10,y:y(value)+4,fill:'#a4b7c0','font-size':10},value));
+function rsiChart(){const height=150,y=v=>10+(100-v)*1.15,root=svg('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':'RSI: neutrale Überdehnung über 70 und unter 30, ohne Richtungsbewertung'}),defs=svg('defs');
+ for(const [name,value]of [['overbought',70],['oversold',30]]){const clip=svg('clipPath',{id:`rsi-${name}`});clip.append(svg('rect',{x:left,y:name==='overbought'?y(100):y(30),width:plot,height:name==='overbought'?y(70)-y(100):y(0)-y(30)}));defs.append(clip);const points=rsiFillPoints(report.series.map(p=>p.rsi14),value,x,y);if(points){root.append(svg('polygon',{points,fill:'#f0b56d',opacity:.23,'clip-path':`url(#rsi-${name})`,'data-rsi-zone':name}));}}
+ root.append(defs);for(const value of [0,30,50,70,100])root.append(svg('line',{x1:left,x2:width-right,y1:y(value),y2:y(value),stroke:value===30||value===70?'#8a6b43':'#34424a','stroke-dasharray':value===30||value===70?'4 4':'none'}),svg('text',{x:width-right+10,y:y(value)+4,fill:'#a4b7c0','font-size':10},value));
  line(root,report.series.map(p=>p.rsi14),y,'#bea9ef',{'data-series':'rsi14'});root.addEventListener('pointermove',event=>{const r=root.getBoundingClientRect(),i=Math.max(0,Math.min(report.series.length-1,Math.round(((event.clientX-r.left)*width/r.width-left)/plot*(report.series.length-1))));const p=report.series[i];$('rsi-readout').textContent=`${p.date} · RSI ${fmt(p.rsi14)}`;});
- $('rsi-chart').append(root);$('rsi-state').textContent=`${fmt(rsi)} · ${rsi>70?'Überkauft':rsi<30?'Überverkauft':'Neutral'}`;$('rsi-readout').textContent='Über 70: überkauft · Unter 30: überverkauft';
+ $('rsi-chart').append(root);$('rsi-state').textContent=`${fmt(rsi)} · ${rsiLabel}`;$('rsi-readout').textContent='Überdehnung: über 70 überkauft · unter 30 überverkauft';
 }
 priceChart();rsiChart();
 for(const line of [`Quelle: ${report.source}`,`Preisbehandlung: ${report.adjustment}`,`CSV SHA-256: ${report.dataset?.sha256||'nicht angegeben'}`,`Prüfsumme gegen Vorgabe: ${report.dataset?.checksum_verified?'bestätigt':'nur Fingerabdruck, keine externe Verifikation'}`,`3/3-Pivots · Zonen: mindestens2 Berührungen · ATR14 Wilder · RSI14 Wilder · MACD12/26/9 · Trend-SMA20/50/200`,...report.limits])$('evidence').append(el('p',line));

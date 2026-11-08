@@ -349,3 +349,35 @@ assert.equal(run([null,null]),'');
         capture_output=True,
         text=True,
     )
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="Optional full-render check needs Node")
+@pytest.mark.parametrize("value", [20.0, 30.0, 50.0, 70.0, 80.0])
+def test_rendered_rsi_has_no_direction_class_or_rating_side_effect(value):
+    data = report(bars(np.linspace(150.0, 50.0, 260)))
+    data["momentum"]["rsi14"] = value  # Isolate presentation; keep assessment unchanged.
+    check = r"""
+const fs=require('node:fs'),vm=require('node:vm');
+const data=JSON.parse(fs.readFileSync(0,'utf8')), nodes=new Map();
+const node=()=>({textContent:'',className:'',children:[],attrs:{},append(...items){this.children.push(...items)},setAttribute(k,v){this.attrs[k]=v},addEventListener(){}});
+const document={getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id)},createElement:node,createElementNS:node};
+document.getElementById('report-data').textContent=JSON.stringify(data);
+vm.runInNewContext(fs.readFileSync(process.argv[1],'utf8'),{document,Number,Intl,Math,JSON});
+const card=nodes.get('metrics').children[4], all=n=>[n,...n.children.flatMap(all)];
+process.stdout.write(JSON.stringify({className:card.children[1].className,label:card.children[2].textContent,state:nodes.get('state').children[1].textContent,fills:all(nodes.get('rsi-chart')).filter(n=>n.attrs['data-rsi-zone']).map(n=>n.attrs.fill)}));
+"""
+    result = subprocess.run(
+        ["node", "-e", check, str(Path(__file__).with_name("view.js"))],
+        input=json.dumps(data),
+        check=True,
+        capture_output=True,
+        encoding="utf-8",
+    )
+    rendered = json.loads(result.stdout)
+    assert rendered["state"] == data["assessment"]["state"] == "BEARISH"
+    assert rendered["className"] == ("rsi-extension" if value < 30 or value > 70 else "rsi-neutral")
+    assert rendered["fills"] == ["#f0b56d", "#f0b56d"]
+    if value < 30 or value > 70:
+        assert "Überdehnung" in rendered["label"]
+    else:
+        assert rendered["label"] == "Neutral"
