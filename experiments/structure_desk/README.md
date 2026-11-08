@@ -103,16 +103,20 @@ with dates rather than implying every old formation remains active today.
 
 ## Validation and delivery
 
-74 tests pass: 46 unchanged baseline tests and28 isolated Structure Desk cases.
+75 tests pass: 46 unchanged baseline tests and29 isolated Structure Desk cases.
 They cover hand-calculated RSI/ATR, exact swings, confirmation lag, strict ties,
 wick versus close breaks, CHoCH direction, missing/invalid data, two-touch zones,
 between-touch invalidation, immutable geometry under future volatility, no-future
 event/indicator mutation, double-bottom/top confirmation, divergence thresholds,
 bearish near support/oversold, checksum/adjustment, HTML injection safety, date
-cutoff and byte-identical regeneration. Ruff and JavaScript syntax checks pass.
+cutoff and byte-identical regeneration. The optional Node geometry regression
+verifies RSI fill begins only at the first available observation (no warmup fill);
+it skips if Node is absent. Node was present and the check passed in this validation.
+Ruff and JavaScript syntax checks pass.
 
 Independent review PASS after correcting the two zone findings and rerunning all
-74 tests. Additional reviewer probes cover post-break reconfirmation and mirrored
+74 tests at that stage, then all29 experiment cases including the final RSI warmup
+fix. Additional reviewer probes cover post-break reconfirmation and mirrored
 resistance invalidation. Three real frozen CSV smoke reports verify their hashes.
 Browser QA: price/RSI plots, pivot dates, zone establishment and assessment/conflicts;
 360px and1440px show no horizontal overflow or invalid SVG coordinates; no script

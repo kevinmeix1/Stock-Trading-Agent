@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -327,3 +329,23 @@ def test_cli_cutoff_is_before_analysis_and_output_is_reproducible(tmp_path):
     assert (tmp_path / "one/index.html").read_bytes() == (tmp_path / "two/index.html").read_bytes()
     assert json.loads(first)["as_of"] == cutoff
     assert json.loads(first)["bars"] == 220
+
+
+@pytest.mark.skipif(
+    shutil.which("node") is None, reason="Optional JavaScript geometry check needs Node"
+)
+def test_rsi_fill_never_paints_the_unavailable_warmup():
+    check = """
+const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict');
+const source=fs.readFileSync(process.argv[1],'utf8');
+const helper=source.slice(source.indexOf('function rsiFillPoints('),source.indexOf('function priceChart('));
+const run=values=>vm.runInNewContext(helper+';rsiFillPoints(values,70,i=>i*10,v=>100-v)',{values,Number});
+assert.equal(run([null,null,80,90]),'20,30 20,20 30,10 30,30');
+assert.equal(run([null,null]),'');
+"""
+    subprocess.run(
+        ["node", "-e", check, str(Path(__file__).with_name("view.js"))],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
