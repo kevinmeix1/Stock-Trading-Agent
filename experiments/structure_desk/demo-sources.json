@@ -1,0 +1,16 @@
+{
+  "purpose": "Reproduce descriptive reports on the already evaluated historical snapshots, not a new holdout experiment",
+  "repository": "weyland-corporation/Stock-Trading-Agent",
+  "commit": "89933382e8aaf0730bf98e9b342e190a5a396651",
+  "path": "experiments/chart_poc/data",
+  "source": "Quandl WIKI Prices via Bokeh sampledata, frozen PoC snapshot",
+  "currency": "USD",
+  "interval": "1D",
+  "adjusted": true,
+  "revision_limit": "Retrospective adjusted snapshot (subsequent corporate actions), not a point-in-time vendor archive",
+  "symbols": [
+    {"symbol": "AAPL", "sha256": "6af8063d42b79cf89ba68dfefe5d8107b8a330f962d736dd3ef3428e4ddcf9dd"},
+    {"symbol": "IBM", "sha256": "a656c3bcc4ee3254b19cfe44b8613399602815c59beae2eb5d71dcef34752975"},
+    {"symbol": "MSFT", "sha256": "3feb728e4b1bad8b9bf615ab83489ca5834543081b9ad3b6cef9e9e117a28546"}
+  ]
+}

@@ -19,6 +19,9 @@ market data (yfinance) by changing configuration only.
 
 ### What you get
 
+For an isolated descriptive chart prototype, see [Read-only Structure Desk](experiments/structure_desk/README.md).
+It exports local HTML/JSON without invoking the trading pipeline or forecasting future prices.
+
 - 🧠 **Five specialised analysts** (technical, fundamental, sentiment, macro,
   order-flow) that run **concurrently** and produce decorrelated views.
 - 🥊 **Adversarial bull-vs-bear debate** with a judge that yields a calibrated
