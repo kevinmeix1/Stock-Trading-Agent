@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
+import numpy as np
 import pandas as pd
 
 
@@ -32,13 +33,36 @@ class PriceHistory:
     frame: pd.DataFrame
 
     def __post_init__(self) -> None:
+        self.frame = self.frame.copy()
+        if not isinstance(self.frame.index, pd.DatetimeIndex):
+            self.frame.index = pd.to_datetime(self.frame.index)
+        self.frame = self.frame.sort_index()
+        self.validate()
+
+    def validate(self) -> None:
+        """Reject corrupt bars rather than smoothing over them in indicators."""
         required = {"open", "high", "low", "close", "volume"}
         missing = required - set(self.frame.columns)
         if missing:
             raise ValueError(f"PriceHistory for {self.symbol} missing columns: {sorted(missing)}")
-        if not isinstance(self.frame.index, pd.DatetimeIndex):
-            self.frame.index = pd.to_datetime(self.frame.index)
-        self.frame = self.frame.sort_index()
+        if self.frame.empty or not self.frame.columns.is_unique:
+            raise ValueError("PriceHistory requires nonempty, uniquely named OHLCV columns.")
+        index = self.frame.index
+        if (not isinstance(index, pd.DatetimeIndex) or index.hasnans
+                or not index.is_unique or not index.is_monotonic_increasing):
+            raise ValueError("PriceHistory dates must be valid, unique and chronological.")
+        for name in required:
+            series = self.frame[name]
+            if (not pd.api.types.is_numeric_dtype(series) or pd.api.types.is_bool_dtype(series)
+                    or pd.api.types.is_complex_dtype(series) or series.isna().any()
+                    or not np.isfinite(series.to_numpy(dtype=float)).all()):
+                raise ValueError(f"PriceHistory {name} must contain finite real numbers.")
+        prices = self.frame[["open", "high", "low", "close"]]
+        if (prices <= 0).any().any() or (self.frame["volume"] < 0).any():
+            raise ValueError("Prices must be positive and volume nonnegative.")
+        if ((self.frame["high"] < prices.max(axis=1)).any()
+                or (self.frame["low"] > prices.min(axis=1)).any()):
+            raise ValueError("OHLC bars must satisfy low <= open/close <= high.")
 
     def __len__(self) -> int:
         return len(self.frame)

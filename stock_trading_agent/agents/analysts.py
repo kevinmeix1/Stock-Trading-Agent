@@ -5,7 +5,7 @@ Each analyst examines one "lens" on the asset and emits an
 ``[-1, 1]`` plus a confidence and rationale.
 
 * :class:`TechnicalAnalyst`   - price action & momentum indicators
-* :class:`FundamentalAnalyst` - valuation & quality (pseudo-fundamentals offline)
+* :class:`FundamentalAnalyst` - valuation & quality (sourced inputs only)
 * :class:`SentimentAnalyst`   - news / headline tone
 * :class:`MacroAnalyst`       - regime & volatility backdrop
 """
@@ -13,6 +13,9 @@ Each analyst examines one "lens" on the asset and emits an
 from __future__ import annotations
 
 import hashlib
+import math
+from datetime import date
+from numbers import Real
 from typing import Any
 
 from stock_trading_agent.agents.base import AgentContext, BaseAgent
@@ -111,23 +114,36 @@ class TechnicalAnalyst(_AnalystBase):
 class FundamentalAnalyst(_AnalystBase):
     role = "fundamental_analyst"
 
-    def _pseudo_fundamentals(self, symbol: str) -> dict[str, float]:
-        """Deterministic stand-in fundamentals when no real data is available."""
+    def _fundamentals(self, ctx: AgentContext) -> dict | None:
+        """Accept complete caller-sourced facts known at the history cutoff."""
+        facts = ctx.scratchpad.get("fundamentals")
+        if not isinstance(facts, dict) or facts.get("symbol") != ctx.symbol:
+            return None
+        if not isinstance(facts.get("source"), str) or not facts["source"].strip():
+            return None
+        try:
+            if date.fromisoformat(facts["as_of"]) > ctx.history.end.date():
+                return None
+        except (KeyError, TypeError, ValueError):
+            return None
+        for key in ("pe", "rev_growth", "margin", "debt_to_equity"):
+            value = facts.get(key)
+            if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value):
+                return None
+        # A nonpositive P/E is not an attractive earnings valuation.
+        if facts["pe"] <= 0 or facts["debt_to_equity"] < 0 or facts["rev_growth"] < -1:
+            return None
+        return facts
 
-        pe = 8 + _stable_unit(symbol, "pe") * 45  # 8..53
-        rev_growth = (_stable_unit(symbol, "growth") - 0.3) * 0.6  # -18%..+18%
-        margin = _stable_unit(symbol, "margin") * 0.35  # 0..35%
-        debt_to_equity = _stable_unit(symbol, "de") * 2.5  # 0..2.5
-        return {
-            "pe": round(pe, 1),
-            "rev_growth": round(rev_growth, 3),
-            "margin": round(margin, 3),
-            "debt_to_equity": round(debt_to_equity, 2),
-        }
+    def reason(self, ctx: AgentContext) -> dict[str, Any]:
+        # No model may manufacture a missing-data opinion or alter the facts.
+        return self.heuristic(ctx)
 
     def heuristic(self, ctx: AgentContext) -> dict[str, Any]:
-        f = ctx.scratchpad.get("fundamentals") or self._pseudo_fundamentals(ctx.symbol)
-        ctx.remember("fundamentals", f)
+        f = self._fundamentals(ctx)
+        if f is None:
+            return {"signal": 0., "confidence": 0., "key_points": [],
+                    "rationale": "Fundamental data unavailable: complete sourced, dated inputs required."}
         signal = 0.0
         points: list[str] = []
 
@@ -151,7 +167,8 @@ class FundamentalAnalyst(_AnalystBase):
         confidence = 0.5 + abs(signal) / 3
         rationale = (
             f"P/E {f['pe']}, growth {f['rev_growth'] * 100:+.1f}%, "
-            f"margin {f['margin'] * 100:.1f}%, D/E {f['debt_to_equity']}."
+            f"margin {f['margin'] * 100:.1f}%, D/E {f['debt_to_equity']}. "
+            f"Caller-supplied source: {f['source']}; as of {f['as_of']}."
         )
         return {
             "signal": _clamp(signal),

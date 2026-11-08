@@ -7,6 +7,7 @@ dependency on TA-Lib or other native libraries.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from numbers import Integral, Real
 
 import numpy as np
 import pandas as pd
@@ -14,26 +15,56 @@ import pandas as pd
 from stock_trading_agent.data.types import PriceHistory
 
 
+def _window(window: int) -> None:
+    if isinstance(window, bool) or not isinstance(window, Integral) or window < 1:
+        raise ValueError("Indicator window must be a positive integer.")
+
+
+def _series(series: pd.Series, *, positive: bool = True) -> None:
+    if (series.empty or not pd.api.types.is_numeric_dtype(series)
+            or pd.api.types.is_bool_dtype(series) or pd.api.types.is_complex_dtype(series)
+            or series.isna().any() or not np.isfinite(series.to_numpy(dtype=float)).all()
+            or (positive and (series <= 0).any())):
+        raise ValueError("Indicator input requires finite real prices, positive where applicable.")
+
+
 def sma(series: pd.Series, window: int) -> pd.Series:
+    _window(window)
+    _series(series)
     return series.rolling(window=window, min_periods=1).mean()
 
 
 def ema(series: pd.Series, window: int) -> pd.Series:
+    _window(window)
+    _series(series, positive=False)  # Also used for the signed MACD line.
     return series.ewm(span=window, adjust=False).mean()
 
 
 def rsi(series: pd.Series, window: int = 14) -> pd.Series:
-    delta = series.diff()
-    gain = delta.clip(lower=0.0)
-    loss = -delta.clip(upper=0.0)
-    avg_gain = gain.ewm(alpha=1 / window, adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1 / window, adjust=False).mean()
-    rs = avg_gain / avg_loss.replace(0.0, np.nan)
-    out = 100 - (100 / (1 + rs))
-    return out.fillna(50.0)
+    """Wilder RSI: simple seed, recursive smoothing, NaN until window changes."""
+    _window(window)
+    _series(series)
+    values = series.to_numpy(dtype=float)
+    out = np.full(len(values), np.nan)
+    if len(values) <= window:
+        return pd.Series(out, index=series.index, name=series.name)
+    changes = np.diff(values)
+    gains, losses = np.maximum(changes, 0), np.maximum(-changes, 0)
+    avg_gain, avg_loss = gains[:window].mean(), losses[:window].mean()
+    for i in range(window, len(values)):
+        if i > window:
+            avg_gain = (avg_gain * (window - 1) + gains[i - 1]) / window
+            avg_loss = (avg_loss * (window - 1) + losses[i - 1]) / window
+        out[i] = 50. if avg_gain == avg_loss == 0 else 100. * avg_gain / (avg_gain + avg_loss)
+    return pd.Series(out, index=series.index, name=series.name)
 
 
 def macd(series: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9) -> pd.DataFrame:
+    _series(series)
+    for window in (fast, slow, signal):
+        _window(window)
+    if fast >= slow:
+        raise ValueError("MACD requires fast < slow.")
     macd_line = ema(series, fast) - ema(series, slow)
     signal_line = ema(macd_line, signal)
     histogram = macd_line - signal_line
@@ -41,6 +72,8 @@ def macd(series: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9) -> 
 
 
 def bollinger(series: pd.Series, window: int = 20, num_std: float = 2.0) -> pd.DataFrame:
+    if isinstance(num_std, bool) or not isinstance(num_std, Real) or not np.isfinite(num_std) or num_std <= 0:
+        raise ValueError("Bollinger width must be positive and finite.")
     mid = sma(series, window)
     std = series.rolling(window=window, min_periods=1).std(ddof=0)
     upper = mid + num_std * std
@@ -49,7 +82,9 @@ def bollinger(series: pd.Series, window: int = 20, num_std: float = 2.0) -> pd.D
 
 
 def annualised_volatility(series: pd.Series, window: int = 20) -> float:
-    daily = series.pct_change().dropna().tail(window)
+    _window(window)
+    _series(series)
+    daily = series.pct_change(fill_method=None).dropna().tail(window)
     if daily.empty:
         return 0.0
     return float(daily.std(ddof=0) * np.sqrt(252))
@@ -58,7 +93,12 @@ def annualised_volatility(series: pd.Series, window: int = 20) -> float:
 def atr(frame: pd.DataFrame, window: int = 14) -> pd.Series:
     """Average True Range — a volatility measure used for adaptive stops."""
 
+    _window(window)
+    for name in ("high", "low", "close"):
+        _series(frame[name])
     high, low, close = frame["high"], frame["low"], frame["close"]
+    if ((low > close) | (high < close) | (low > high)).any():
+        raise ValueError("Invalid OHLC range for ATR.")
     prev_close = close.shift(1)
     true_range = pd.concat(
         [(high - low), (high - prev_close).abs(), (low - prev_close).abs()],
@@ -70,6 +110,10 @@ def atr(frame: pd.DataFrame, window: int = 14) -> pd.Series:
 def on_balance_volume(close: pd.Series, volume: pd.Series) -> pd.Series:
     """On-Balance Volume — cumulative volume signed by daily price direction."""
 
+    _series(close)
+    _series(volume, positive=False)
+    if not close.index.equals(volume.index) or (volume < 0).any():
+        raise ValueError("OBV requires aligned, nonnegative volume.")
     direction = np.sign(close.diff().fillna(0.0))
     return (direction * volume).cumsum()
 
@@ -101,6 +145,20 @@ class IndicatorSnapshot:
     trend: str  # "uptrend" | "downtrend" | "sideways"
     momentum: str  # "overbought" | "oversold" | "neutral"
 
+    def __post_init__(self) -> None:
+        self.validate()
+
+    def validate(self) -> None:
+        for key, value in asdict(self).items():
+            if key in {"symbol", "obv_trend", "trend", "momentum"}:
+                continue
+            if isinstance(value, bool) or not isinstance(value, Real) or not np.isfinite(value):
+                raise ValueError(f"Invalid indicator {key}: finite real value required.")
+        if not 0 <= self.rsi_14 <= 100 or min(self.annualised_vol, self.atr_pct, self.volume_ratio) < 0:
+            raise ValueError("Indicator RSI or volatility/volume outside its valid range.")
+        if min(self.last_close, self.sma_20, self.sma_50, self.ema_12) <= 0:
+            raise ValueError("Indicator prices must be positive.")
+
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -109,6 +167,9 @@ def compute_indicators(history: PriceHistory) -> IndicatorSnapshot:
     """Compute a full :class:`IndicatorSnapshot` from a price history."""
 
     frame = history.frame
+    history.validate()
+    if len(history) < 50:
+        raise ValueError("Indicator snapshot requires at least 50 complete bars.")
     close = frame["close"]
     volume = frame["volume"]
     sma20 = sma(close, 20)

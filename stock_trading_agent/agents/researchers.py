@@ -34,6 +34,7 @@ class ResearchDebate:
     def _weighted_conviction(reports: list[AnalystReport]) -> tuple[float, float]:
         """Return (conviction, disagreement) from analyst reports."""
 
+        reports = [report for report in reports if report.confidence > 0]
         if not reports:
             return 0.0, 0.0
         total_w = sum(r.confidence for r in reports) or 1.0
@@ -73,7 +74,7 @@ class ResearchDebate:
 
     def run(self, ctx: AgentContext) -> DebateResult:
         reports: list[AnalystReport] = [
-            v for v in ctx.scratchpad.values() if isinstance(v, AnalystReport)
+            v for v in ctx.scratchpad.values() if isinstance(v, AnalystReport) and v.confidence > 0
         ]
         conviction, disagreement = self._weighted_conviction(reports)
 
