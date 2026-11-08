@@ -122,6 +122,9 @@ python docs/generate_architecture_pdf.py   # writes docs/architecture.pdf
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the generated
 [`docs/architecture.pdf`](docs/architecture.pdf) for the full design.
 
+See the [chart-analysis and TradingView technology evaluation](docs/evaluation/CHART_ANALYSIS_EVALUATION.md)
+(German) for the proposed architecture, source comparison, and validation plan.
+
 Run the tests:
 
 ```bash
