@@ -1,3 +1,5 @@
 data/*.csv -text
 *.json text eol=lf
 results/*.json text eol=lf
+results/*.csv -text
+*.md text eol=lf
