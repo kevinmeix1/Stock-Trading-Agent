@@ -169,7 +169,7 @@ whole system is reproducible and CI-friendly with **no API key**.
 
 ### Phase 3 — Analyst agents (`agents/analysts.py`)
 Five agents, each emitting a signal in `[-1, 1]` + confidence + rationale:
-technical, fundamental (pseudo-fundamentals offline), sentiment (scores
+technical, fundamental (sourced inputs only; unavailable inputs carry zero confidence), sentiment (scores
 headlines, or a price-confirmed proxy), macro (volatility regime), and **flow**
 (OBV / relative-volume / Bollinger-position — i.e. is the move *confirmed* by
 participation). They are independent, so the orchestrator runs them concurrently.

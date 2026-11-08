@@ -19,6 +19,10 @@ class PortfolioManager(BaseAgent):
         super().__init__(llm, settings)
         self.action_threshold = action_threshold
 
+    def reason(self, ctx: AgentContext) -> dict[str, Any]:
+        """The final action and mandate are deterministic, including online mode."""
+        return self.heuristic(ctx)
+
     def heuristic(self, ctx: AgentContext) -> dict[str, Any]:
         debate: DebateResult | None = ctx.scratchpad.get("debate")
         risk: RiskAssessment | None = ctx.scratchpad.get("risk")
@@ -49,7 +53,7 @@ class PortfolioManager(BaseAgent):
         return {
             "symbol": ctx.symbol,
             "action": action.value,
-            "target_weight": round(weight, 4),
+            "target_weight": weight,  # Rounding upward must not exceed the risk mandate.
             "confidence": round(confidence, 4),
             "stop_loss_pct": risk.stop_loss_pct if risk else 0.0,
             "take_profit_pct": risk.take_profit_pct if risk else 0.0,

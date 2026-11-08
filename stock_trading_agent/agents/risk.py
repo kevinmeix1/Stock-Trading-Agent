@@ -6,6 +6,7 @@ volatility targeting, then approves or vetoes the trade against hard limits.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from stock_trading_agent.agents.base import AgentContext, BaseAgent
@@ -28,6 +29,13 @@ class RiskManager(BaseAgent):
         max_drawdown_guard: float = 0.25,
     ):
         super().__init__(llm, settings)
+        for name, value in {"target_volatility": target_volatility, "max_position": max_position,
+                            "max_asset_vol": max_asset_vol, "min_conviction": min_conviction,
+                            "kelly_fraction": kelly_fraction, "max_drawdown_guard": max_drawdown_guard}.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be nonnegative and finite.")
+        if target_volatility <= 0 or max_asset_vol <= 0 or max_position > 1 or min_conviction > 1 or kelly_fraction > 1 or max_drawdown_guard > 1:
+            raise ValueError("Invalid risk policy limits.")
         self.target_volatility = target_volatility
         self.max_position = max_position
         self.max_asset_vol = max_asset_vol
@@ -35,13 +43,29 @@ class RiskManager(BaseAgent):
         self.kelly_fraction = max(0.0, min(1.0, kelly_fraction))
         self.max_drawdown_guard = max_drawdown_guard
 
+    def reason(self, ctx: AgentContext) -> dict[str, Any]:
+        """Hard policy is executable code; an LLM cannot edit its verdict."""
+        return self.heuristic(ctx)
+
     def heuristic(self, ctx: AgentContext) -> dict[str, Any]:
         debate: DebateResult | None = ctx.scratchpad.get("debate")
         conviction = debate.conviction if debate else 0.0
         ind = ctx.indicators
+        try:
+            ind.validate()
+            if not math.isfinite(conviction) or not -1 <= conviction <= 1:
+                raise ValueError("Invalid conviction.")
+        except (TypeError, ValueError):
+            return {"approved": False, "position_size_pct": 0., "stop_loss_pct": 0.,
+                    "take_profit_pct": 0., "rationale": "Invalid indicator or conviction input.",
+                    "flags": ["Invalid indicator or conviction input; position rejected."]}
         vol = max(ind.annualised_vol, 1e-6)
 
         flags: list[str] = []
+        if vol > self.max_asset_vol:
+            return {"approved": False, "position_size_pct": 0., "stop_loss_pct": 0.,
+                    "take_profit_pct": 0., "rationale": "Asset volatility exceeds the hard limit.",
+                    "flags": [f"Asset volatility {vol:.2f} exceeds limit {self.max_asset_vol}."]}
 
         # (1) Volatility-targeted base size, scaled by conviction strength.
         vol_scalar = min(1.0, self.target_volatility / vol)
@@ -51,7 +75,7 @@ class RiskManager(BaseAgent):
         # return of ``|conviction| * target_volatility`` against a variance of
         # ``vol**2``; full Kelly is mu / sigma**2. We then scale by the
         # configured Kelly fraction to temper the notoriously aggressive bet.
-        kelly_full = min(1.0, abs(conviction) * self.target_volatility / (vol**2))
+        kelly_full = min(1.0, abs(conviction) * (self.target_volatility / vol) / vol)
         blended = (1.0 - self.kelly_fraction) * vol_target_size + self.kelly_fraction * kelly_full
         position = min(self.max_position, blended)
 
@@ -59,10 +83,8 @@ class RiskManager(BaseAgent):
         if abs(conviction) < self.min_conviction:
             approved = False
             flags.append("Conviction below minimum threshold.")
-        if vol > self.max_asset_vol:
-            approved = False
+        if not approved:
             position = 0.0
-            flags.append(f"Asset volatility {vol:.2f} exceeds limit {self.max_asset_vol}.")
         if ctx.memory_notes:
             flags.append("Reviewed prior-trade reflections.")
 
