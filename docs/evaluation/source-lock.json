@@ -1,0 +1,228 @@
+{
+  "review_date": "2026-11-08",
+  "baseline": "kevinmeix1/Stock-Trading-Agent",
+  "sources": [
+    {
+      "repo": "kevinmeix1/Stock-Trading-Agent",
+      "commit": "8e9246bdfa87fac2c0ed6f6f488419e699cd043f",
+      "commit_date": "2026-06-29T11:58:45Z",
+      "pushed_at": "2026-06-29T11:58:45Z",
+      "api_license": null,
+      "reviewed_files": [
+        "README.md",
+        "docs/ARCHITECTURE.md",
+        "stock_trading_agent/",
+        "tests/",
+        "pyproject.toml",
+        "docs/generate_architecture_pdf.py"
+      ]
+    },
+    {
+      "repo": "tradesdontlie/tradingview-mcp",
+      "commit": "c05b8f5755ed8e64ea242de88ddbf46aa24d56a4",
+      "commit_date": "2026-07-28T17:28:37Z",
+      "pushed_at": "2026-10-21T15:03:51Z",
+      "api_license": "NOASSERTION",
+      "reviewed_files": [
+        "LICENSE",
+        "package.json",
+        "src/connection.js",
+        "src/core/data.js",
+        "tests/chart_history.test.js"
+      ]
+    },
+    {
+      "repo": "stophobia/TradingView-MCP2",
+      "commit": "56334ec1c187661c4ee593e263b1450d390a024d",
+      "commit_date": "2026-09-10T23:26:47Z",
+      "pushed_at": "2026-09-10T23:27:22Z",
+      "api_license": "MIT",
+      "reviewed_files": [
+        "package.json",
+        "docs/WINDOWS.md",
+        "src/tradingview.ts",
+        "src/priceActionContext.ts",
+        "src/walkForward.ts",
+        "src/indicatorAudit.ts"
+      ]
+    },
+    {
+      "repo": "atilaahmettaner/tradingview-mcp",
+      "commit": "e8fdb9b9a23b4389df7cd62e1d90b238ed690101",
+      "commit_date": "2026-11-07T14:05:59Z",
+      "pushed_at": "2026-11-07T14:05:59Z",
+      "api_license": "MIT",
+      "reviewed_files": [
+        "pyproject.toml",
+        "src/tradingview_mcp/core/services/smart_money_service.py",
+        "src/tradingview_mcp/core/services/backtest_service.py",
+        "src/tradingview_mcp/core/services/indicators.py",
+        "src/tradingview_mcp/core/services/indicators_calc.py"
+      ]
+    },
+    {
+      "repo": "moeuu/tradingview-mcp",
+      "commit": "a25367d37a930e680d752fb561e2d7ff0f0df950",
+      "commit_date": "2026-08-22T07:20:28Z",
+      "pushed_at": "2026-11-01T18:46:32Z",
+      "api_license": "MIT",
+      "reviewed_files": [
+        "package.json",
+        "src/analysis.ts",
+        "src/market-service.ts",
+        "src/tradingview-browser.ts"
+      ]
+    },
+    {
+      "repo": "TA-Lib/ta-lib-python",
+      "commit": "c42d29c9862e5884f42bf92d2e5a98018a9839f0",
+      "commit_date": "2026-11-05T18:08:12Z",
+      "pushed_at": "2026-11-05T18:11:42Z",
+      "api_license": "BSD-2-Clause",
+      "reviewed_files": [
+        "README.md",
+        "tests/test_func.py"
+      ]
+    },
+    {
+      "repo": "xgboosted/pandas-ta-classic",
+      "commit": "ee71ae7b044d54ef0e628d82192dfd3c00e4ccc3",
+      "commit_date": "2026-10-31T09:32:09Z",
+      "pushed_at": "2026-10-31T09:32:11Z",
+      "api_license": "MIT",
+      "reviewed_files": [
+        "pyproject.toml",
+        "pandas_ta_classic/candles/cdl_pattern.py"
+      ]
+    },
+    {
+      "repo": "white07S/TradingPatternScanner",
+      "commit": "57e5396c4c5446c8222ed01ca8ebeefc679d611e",
+      "commit_date": "2023-08-02T02:48:07Z",
+      "pushed_at": "2023-08-02T02:49:59Z",
+      "api_license": "NOASSERTION",
+      "reviewed_files": [
+        "LICENSE.md",
+        "tradingpatterns/tradingpatterns.py",
+        "tradingpatterns/tradingpatterns_tech.py"
+      ]
+    },
+    {
+      "repo": "joshyattridge/smart-money-concepts",
+      "commit": "1b62fd6c41e1f508e7ed76831a039fa4c82d42f6",
+      "commit_date": "2026-04-03T14:16:50Z",
+      "pushed_at": "2026-04-03T14:16:51Z",
+      "api_license": "MIT",
+      "reviewed_files": [
+        "smartmoneyconcepts/smc.py"
+      ]
+    },
+    {
+      "repo": "stumpy-dev/stumpy",
+      "commit": "51475d62c5323f9923b0d55fdbbd527a77a18c9d",
+      "commit_date": "2026-11-08T01:45:01Z",
+      "pushed_at": "2026-11-08T01:45:02Z",
+      "api_license": "NOASSERTION",
+      "reviewed_files": [
+        "LICENSE.txt",
+        "stumpy/stump.py"
+      ]
+    },
+    {
+      "repo": "tslearn-team/tslearn",
+      "commit": "a7f1df1a9175892db7a5bd1021ca53849b4d144a",
+      "commit_date": "2026-11-06T10:43:05Z",
+      "pushed_at": "2026-11-06T16:44:58Z",
+      "api_license": "BSD-2-Clause",
+      "reviewed_files": [
+        "tslearn/metrics/_dtw.py"
+      ]
+    },
+    {
+      "repo": "wannesm/dtaidistance",
+      "commit": "7973dda1845a4bc24cd1b2c14939f1d64d461b68",
+      "commit_date": "2026-10-07T10:39:30Z",
+      "pushed_at": "2026-10-07T10:39:32Z",
+      "api_license": "NOASSERTION",
+      "reviewed_files": [
+        "LICENSE",
+        "src/dtaidistance/dtw.py"
+      ]
+    },
+    {
+      "repo": "polakowo/vectorbt",
+      "commit": "8a4c61a3562d4200b926a65e95f5c19c655c435e",
+      "commit_date": "2026-11-07T17:42:26Z",
+      "pushed_at": "2026-11-07T17:42:26Z",
+      "api_license": "NOASSERTION",
+      "reviewed_files": [
+        "LICENSE.md",
+        "vectorbt/portfolio/base.py"
+      ]
+    },
+    {
+      "repo": "mementum/backtrader",
+      "commit": "b853d7c90b6721476eb5a5ea3135224e33db1f14",
+      "commit_date": "2023-04-19T14:13:08Z",
+      "pushed_at": "2024-08-19T17:47:36Z",
+      "api_license": "GPL-3.0",
+      "reviewed_files": [
+        "backtrader/strategy.py"
+      ]
+    },
+    {
+      "repo": "kernc/backtesting.py",
+      "commit": "ca2e2611621e472542ba90f7243a1fa06a7d7108",
+      "commit_date": "2026-08-05T12:39:16Z",
+      "pushed_at": "2026-08-05T12:39:16Z",
+      "api_license": "AGPL-3.0",
+      "reviewed_files": [
+        "backtesting/backtesting.py"
+      ]
+    },
+    {
+      "repo": "TauricResearch/TradingAgents",
+      "commit": "9fa1196fffbcfd9de5146d2dd2869df84ab99838",
+      "commit_date": "2026-11-04T10:13:55Z",
+      "pushed_at": "2026-11-04T10:13:58Z",
+      "api_license": "Apache-2.0",
+      "reviewed_files": [
+        "tradingagents/agents/analysts/market_analyst.py",
+        "tradingagents/graph/trading_graph.py"
+      ]
+    },
+    {
+      "repo": "AI4Finance-Foundation/FinRobot",
+      "commit": "63e1884a42ea7b729551a5424b4bd6a65af636e0",
+      "commit_date": "2026-10-24T13:58:26Z",
+      "pushed_at": "2026-10-24T13:58:26Z",
+      "api_license": "Apache-2.0",
+      "reviewed_files": [
+        "README.md",
+        "setup.py"
+      ]
+    }
+  ],
+  "runtime_probe_sources": [
+    {
+      "name": "moeuu-analysis.ts",
+      "url": "https://raw.githubusercontent.com/moeuu/tradingview-mcp/a25367d37a930e680d752fb561e2d7ff0f0df950/src/analysis.ts",
+      "sha256": "05d912e278015f5b45f06b9302991162c5b2d375e55f0cbae3fc8c2f30414244"
+    },
+    {
+      "name": "mcp2-walkForward.ts",
+      "url": "https://raw.githubusercontent.com/stophobia/TradingView-MCP2/56334ec1c187661c4ee593e263b1450d390a024d/src/walkForward.ts",
+      "sha256": "03075d0323a97bd106a2e81683d42beab79a7d3c67bce0aa3483aa83f1d927d5"
+    },
+    {
+      "name": "mcp2-indicatorAudit.ts",
+      "url": "https://raw.githubusercontent.com/stophobia/TradingView-MCP2/56334ec1c187661c4ee593e263b1450d390a024d/src/indicatorAudit.ts",
+      "sha256": "02630192d5880aaa8ab02e3150497b630abde0d32ddf871cb6f1eccecc4b8a4f"
+    },
+    {
+      "name": "atila-indicators.py",
+      "url": "https://raw.githubusercontent.com/atilaahmettaner/tradingview-mcp/e8fdb9b9a23b4389df7cd62e1d90b238ed690101/src/tradingview_mcp/core/services/indicators_calc.py",
+      "sha256": "d7f00f1c9d72fc0203184c7573f5c9278615919eeaca872e441ac621ac85039f"
+    }
+  ]
+}
